@@ -1,43 +1,28 @@
 document.addEventListener('DOMContentLoaded', function() {
   // Function to collect external links and build a reference list
   function collectExternalLinks() {
-    const articleSections = document.querySelectorAll('.article-section_component');
-    const linksList = document.createElement('ul');
+    const linksList = document.createElement('ol');
     linksList.className = 'cf-references-collector_list';
-    let linkCount = 0;
+    const uniqueLinks = new Set();
+    let linkCounter = 1; // Initialize a counter for continuous numbering
 
-    articleSections.forEach((section) => {
-      const sectionLinks = [];
-      const sectionHeading = section.querySelector('h1, h2, h3, h4, h5, h6');
-      const sectionTitle = sectionHeading ? sectionHeading.textContent : 'Untitled Section';
-
-      section.querySelectorAll('a[href^="http"]:not([href^="' + window.location.origin + '"])').forEach(link => {
-        const href = link.getAttribute('href');
-        const text = link.textContent;
-
-        linkCount++;
-        const referenceNumber = '[' + linkCount + ']';
-
-        // Add reference number to the link in the article
-        const sup = document.createElement('sup');
-        sup.textContent = referenceNumber;
-        link.insertAdjacentElement('afterend', sup);
-
-        // Add link to the section's collection
-        sectionLinks.push('<li>' + referenceNumber + ' <a href="' + href + '" target="_blank">' + text + '</a></li>');
-      });
-
-      // If links were found in this section, add them to the list
-      if (sectionLinks.length > 0) {
-        const sectionHeader = document.createElement('li');
-        sectionHeader.innerHTML = '<strong>' + sectionTitle + '</strong>';
-        linksList.appendChild(sectionHeader);
-        linksList.insertAdjacentHTML('beforeend', sectionLinks.join(''));
+    document.querySelectorAll('.article-section_component a[href^="http"]:not([href^="' + window.location.origin + '"])').forEach(link => {
+      const href = link.getAttribute('href');
+      if (!uniqueLinks.has(href)) {
+        uniqueLinks.add(href);
+        const listItem = document.createElement('li');
+        listItem.value = linkCounter++; // Set the value attribute and increment the counter
+        const linkElement = document.createElement('a');
+        linkElement.href = href;
+        linkElement.textContent = href;
+        linkElement.target = '_blank';
+        listItem.appendChild(linkElement);
+        linksList.appendChild(listItem);
       }
     });
 
     // If any links were found, add the list to the specific div with id #references
-    if (linkCount > 0) {
+    if (uniqueLinks.size > 0) {
       const referencesContainer = document.getElementById('references');
       if (referencesContainer) {
         referencesContainer.appendChild(linksList);
